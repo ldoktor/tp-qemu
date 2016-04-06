@@ -1,4 +1,5 @@
 import logging
+import random
 import time
 import types
 import re
@@ -118,6 +119,14 @@ def run(test, params, env):
     def mig_set_speed():
         mig_speed = params.get("mig_speed", "1G")
         return vm.monitor.migrate_set_speed(mig_speed)
+
+    def start_postcopy():
+        # Lets do a bit of precopy first but vary it a bit to increase
+        # chance of hitting different cases
+        # Note that does mean we might not always hit actual postcopy
+        time.sleep(2+3*random.random())
+        # then start postcopy
+        return vm.monitor.migrate_start_postcopy()
 
     def check_dma():
         dmesg_pattern = params.get("dmesg_pattern",
