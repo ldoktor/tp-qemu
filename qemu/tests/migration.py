@@ -124,7 +124,6 @@ def run(test, params, env):
         # Lets do a bit of precopy first but vary it a bit to increase
         # chance of hitting different cases
         # Note that does mean we might not always hit actual postcopy
-        time.sleep(2+3*random.random())
         # then start postcopy
         return vm.monitor.migrate_start_postcopy()
 
@@ -211,8 +210,8 @@ def run(test, params, env):
                     guest_stress_deamon, ())
                 deamon_thread.start()
 
-            capabilities = ast.literal_eval(params.get("migrate_capabilities", ""))
             inner_cmd = get_functions(params.get("migrate_inner_cmd"), locals())
+            capabilities = ast.literal_eval(params.get("migrate_capabilities", "None"))
 
             # Migrate the VM
             ping_pong = params.get("ping_pong", 1)
