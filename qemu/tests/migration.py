@@ -116,6 +116,31 @@ def run(test, params, env):
                 funcs.append(f)
         return funcs
 
+    def delayed_functions(func_names, locals_dict):
+        """
+        Returns list of tuple(delay, function) sorted by "delay".
+        """
+        if not func_names:
+            return []
+        ret = []
+        for name in func_names.split():
+            name = name.split(':', 1)
+            if len(name) == 2:
+                delay = name[0]
+                if delay[0] == "r":  # r80 = random 0-79
+                    delay = random.randrange(int(delay[1:]))
+                name = name[1]
+            else:
+                delay = 0
+                name = name[0]
+            func = locals_dict.get(name)
+            if isinstance(func, types.FunctionType):
+                logging.info("%s function will be triggered in %s%%", name,
+                             delay)
+                ret.append((delay, func))
+        return sorted(ret, key=lambda x: x[0])
+
+
     def mig_set_speed():
         mig_speed = params.get("mig_speed", "1G")
         return vm.monitor.migrate_set_speed(mig_speed)
@@ -210,8 +235,8 @@ def run(test, params, env):
                     guest_stress_deamon, ())
                 deamon_thread.start()
 
-            inner_cmd = get_functions(params.get("migrate_inner_cmd"), locals())
             capabilities = ast.literal_eval(params.get("migrate_capabilities", "None"))
+            inner_cmd = delayed_functions(params.get("migrate_inner_cmd"), locals())
 
             # Migrate the VM
             ping_pong = params.get("ping_pong", 1)
